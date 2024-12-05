@@ -126,8 +126,6 @@ namespace ProjetIA2022
 
         public override double CalculeHCost()
         {
-            // C'est ici qu'il faut écrire le code de vos heuristiques et retourner une valeur
-
             // variables disponibles :
             // x, y : position de la voiture pour le noeud examiné, valeurs entre 0 et 19
             // energy : énergie de la voiture à ce noeud là, valeur entre 0 et 100
@@ -140,14 +138,87 @@ namespace ProjetIA2022
             // Accès à certaines constantes :
             // Form1.tempscaseautoroute  : 10mn par déplacement d'1 case sur autoroute
             //  Form1.tempscasenationale  : 15mn par déplacement d'1 case sur nationale
-           //   Form1.tempscasedepartementale : 20mn pour déplacement sur départementale
-           //   Form1.tempscaserecharge = 30; // 30mn pour passer de 0 à 100 en énergie
+            //   Form1.tempscasedepartementale : 20mn pour déplacement sur départementale
+            //   Form1.tempscaserecharge = 30; // 30mn pour passer de 0 à 100 en énergie
             // et proportionnellement moins si on a déjà de l'énergie
             // Form1.matrice[x,y] indique le type de case : 1 pour départementale, 2 pour nationale
             // 3 pour autoroute et 8 pour recharge ; -1 dans la matrice est une case inaccessible
-    
-            return ( 0 );
-           
+
+            // Environnement A
+            /*
+            double h = Math.Sqrt((Form1.xfinal - x) * (Form1.xfinal - x) + (Form1.yfinal - y) * (Form1.yfinal - y)) * Form1.tempscasedepartementale;
+            return h;
+            */
+
+            //Environnement A Manhattan
+            /*
+            double h = Math.Abs(x - Form1.xfinal) + Math.Abs(y - Form1.yfinal);
+            return h;
+            */
+
+            /*
+            // Environnement B
+            double h = Math.Sqrt((Form1.xfinal - x) * (Form1.xfinal - x) +
+                        (Form1.yfinal - y) * (Form1.yfinal - y))
+              * Form1.tempscasedepartementale;
+
+            // 2. Si l'énergie est insuffisante pour atteindre directement la destination.
+            if (h * Form1.consoparcase > energy)
+            {
+                // Distance vers la station de recharge unique.
+                var station = Form1.powerstations[0];
+                double distanceToStation = Math.Sqrt((station.X - x) * (station.X - x) +
+                                                     (station.Y - y) * (station.Y - y));
+                double distanceFromStationToGoal = Math.Sqrt((Form1.xfinal - station.X) * (Form1.xfinal - station.X) +
+                                                             (Form1.yfinal - station.Y) * (Form1.yfinal - station.Y));
+
+                // Temps pour recharger complètement.
+                double rechargeTime = Form1.tempscaserecharge;
+
+                // Coût total en passant par la station de recharge.
+                double totalCostViaStation = (distanceToStation + distanceFromStationToGoal) * Form1.tempscasedepartementale + rechargeTime;
+
+                // Met à jour l'heuristique pour inclure le coût de recharge.
+                h = Math.Min(h, totalCostViaStation);
+            }
+
+            return h;
+            */
+
+            
+            // Environnement C
+
+            // Distance euclidienne entre le point actuel et la destination.
+            double h = Math.Sqrt((Form1.xfinal - x) * (Form1.xfinal - x) + (Form1.yfinal - y) * (Form1.yfinal - y)) * Form1.tempscaseautoroute; // Estimation avec le coût moyen.
+
+            // Si l'énergie est insuffisante pour atteindre directement la destination.
+            if (h * Form1.consoparcase > energy)
+            {
+                double minCost = double.MaxValue;
+
+             // Itère sur toutes les stations de recharge.
+            foreach (var station in Form1.powerstations)
+            {
+                double distanceToStation = Math.Sqrt((station.X - x) * (station.X - x) + (station.Y - y) * (station.Y - y));
+                double distanceFromStationToGoal = Math.Sqrt((Form1.xfinal - station.X) * (Form1.xfinal - station.X) + (Form1.yfinal - station.Y) * (Form1.yfinal - station.Y));
+
+                double rechargeTime = Form1.tempscaserecharge;
+
+                // Coût total via cette station.
+                double totalCost = (distanceToStation + distanceFromStationToGoal) * Form1.tempscasedepartementale + rechargeTime;
+
+                minCost = Math.Min(minCost, totalCost);
+            }
+
+            // Met à jour l'heuristique pour inclure la meilleure station.
+            h = Math.Min(h, minCost);
+        }
+
+        return h;
+         
+        
+        //return 0;
+
         }
 
         public override string ToString()
